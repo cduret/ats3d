@@ -1,4 +1,4 @@
 ats3d
 =====
 
-3d engine with ATS
+My attempt to make functional 3d engine with ATS
