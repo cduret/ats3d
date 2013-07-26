@@ -4,7 +4,7 @@ staload "prelude/SATS/array.sats"
 
 staload _(*anonymous*)="prelude/DATS/array.dats"
 
-assume array_ptr_vt (a: vt0p, n: nat) [l:agz] = @{pfgc = free_gc_v (a?, n, l), pf_arr = array_v (a?, n, l), ptr_arr = ptr l}
+assume array_ptr_vt (a: vt0p)  = [n: nat] [l:agz] @{pfgc = free_gc_v (a?, n, l), pf_arr = array_v (a?, n, l), ptr_arr = ptr l}
 //implement ats3d_scene_debug(scene) = let
   //fun __leak(s: Scene): void = ()
 //in __leak scene end

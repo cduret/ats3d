@@ -2,18 +2,21 @@ staload "gl/SATS/engine.sats"
 staload "contrib/GL/SATS/gl.sats"
 staload "gl/SATS/matrix.sats"
 
-dataviewtype SceneZipper =
+absviewt@ype array_ptr_vt(vt0p)
+
+dataviewtype scene_zipper_vt =
   Top of ()
   | Fail of (string) // (msg)
-  | Location of (Scene, SceneZipper) //(tree, path)
-  | NodeGeometry of (string, bool, string, SceneZipper) // (id, visible, kind, path)
-  | NodeTransform of (matrix4_t(GLfloat), SceneZipper) // (matrix, path)
-  | NodeScale of (vector3_t(GLfloat), SceneZipper) // (scale, path)
-  | NodeRotate of (vector3_t(GLfloat), SceneZipper) // (rotate, path)
-  | NodeTranslate of (vector3_t(GLfloat), SceneZipper) // (translate, path)
-  | {m, n: nat} NodeGroup of (array(Scene, m), SceneZipper, array(Scene, n)) // (left, path, right)
-  | NodeShape of (Appearance, SceneZipper, Scene) // (appearance, path , geometry)
+  | Location of (scene_vt, scene_zipper_vt) //(tree, path)
+  | NodeGeometry of (string, bool, string, scene_zipper_vt) // (id, visible, kind, path)
+  | NodeTransform of (matrix4_t(GLfloat), scene_zipper_vt) // (matrix, path)
+  | NodeScale of (vector3_t(GLfloat), scene_zipper_vt) // (scale, path)
+  | NodeRotate of (vector3_t(GLfloat), scene_zipper_vt) // (rotate, path)
+  | NodeTranslate of (vector3_t(GLfloat), scene_zipper_vt) // (translate, path)
+  | {m, n: nat} NodeGroup of (array_ptr_vt(scene_vt), size_t m, scene_zipper_vt, array_ptr_vt(scene_vt), size_t n) // (left, path, right)
+  | NodeShape of (appearance_vt, scene_zipper_vt, scene_vt) // (appearance, path , geometry)
 
+(*
 dataviewtype SceneZipperGL =
   TopGL of ()
   | FailGL of (string) // (msg)
@@ -25,10 +28,10 @@ dataviewtype SceneZipperGL =
   | NodeTranslateGL of (vector3_t(GLfloat), SceneZipperGL) // (translate, path)
   | {m, n: nat} NodeGroupGL of (array(SceneGL, m), SceneZipperGL, array(SceneGL, n)) // (left, path, right)
   | NodeShapeGL of (AppearanceGL, SceneZipperGL, SceneGL) // (appearance, path , geometry)
-
+*)
 //fun zip_free(loc: SceneZipper): void
 
-fun zip_down(loc: !SceneZipper): SceneZipper
+fun zip_down(loc: !scene_zipper_vt): scene_zipper_vt
 (*
 fun zip_down_gl(loc: SceneZipperGL): SceneZipperGL
 

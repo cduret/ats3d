@@ -4,7 +4,6 @@ staload "gl/SATS/matrix.sats"
 staload "gl/SATS/core.sats"
 
 (*
-
 dataviewtype UniformData =
   UniformInt of (string, int) // (name, value)
   | UniformBool of (string, bool) // (name, value)
@@ -28,18 +27,20 @@ dataviewtype UniformData =
 dataviewtype UniformDataGL = 
   UniformIntGL of (GLint, int) // (idx, value)
 // ...
+*)
 
-dataviewtype Appearance =
+dataviewtype appearance_vt =
   {m, n: nat} Shader of (string, string, string, array(string, m), array(string, m)) // (id, vertex_src, fragment_src, attributes, uniforms)
   | {n: nat} ShaderMaterial of (array(GLint, n))
 
+(*
 dataviewtype AppearanceGL =
   | {m, n: nat} ShaderGL of (string, GLprogram, array(GLuint, m), array(GLint, n), GLint, GLint) // (id, program, attributes, uniforms, mv_u_idx, p_u_idx)
   | {m, n: nat} ActivatedShaderGL of (AppearanceGL, array(GLuint, m), GLuint, array(GLint, n)) // (parent, attributes_h, default_attr_h, uniforms_h)
   | {n: nat} ShaderMaterialGL of (array(UniformDataGL, n))
 *)
 
-absviewt@ype array_ptr_vt(vt0p, nat)
+absviewt@ype array_ptr_vt(vt0p)
 
 dataviewtype scene_vt =
   Fail of (string)
@@ -50,8 +51,8 @@ dataviewtype scene_vt =
   | Scale of (vector3_t(GLfloat), scene_vt) // (scale, scene)
   | Translate of (vector3_t(GLfloat), scene_vt) // (translate, scene)
   | Rotate of (vector3_t(GLfloat), scene_vt) // (rotate, scene)
-  | {n: nat} Group of (array_ptr_vt(scene_vt, n), size_t n) // (scenes)
-  | Shape of (Appearance, scene_vt) // (appearance, geometry)
+  | {n: nat} Group of (array_ptr_vt(scene_vt), size_t n) // (scenes)
+  | Shape of (appearance_vt, scene_vt) // (appearance, geometry)
   | {n: nat} Lines of (array(GLfloat, n), string, string) // (vertices, ref, attribute)
   | {n: nat} LineLoop of (array(GLfloat, n), string, string) // (vertices, ref, attribute)
   | {n: nat} LineStrip of (array(GLfloat, n), string, string) // (vertices, ref, attribute)
