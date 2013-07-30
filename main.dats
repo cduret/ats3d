@@ -4,6 +4,8 @@ staload "contrib/GLEXT/SATS/glext.sats"
 staload "contrib/GLFW/SATS/glfw.sats"
 staload "gl/SATS/matrix.sats"
 staload "gl/SATS/core.sats"
+staload "gl/SATS/engine.sats"
+staload "util/SATS/scene_zipper.sats"
 
 staload "util/SATS/number.sats"
 #include "util/HATS/number.hats"
@@ -12,6 +14,14 @@ staload "util/SATS/number.sats"
 staload _(*anonymous*)="prelude/DATS/array.dats"
 staload _(*anonymous*) = "gl/DATS/matrix.dats"
 staload _(*anonymous*) = "gl/DATS/core.dats"
+staload _(*anonymous*) = "gl/DATS/engine.dats"
+staload _(*anonymous*) = "util/DATS/scene_zipper.dats"
+
+// new
+dataviewtype world_vt =
+  | GlData of (gl_context_data_vt, scene_zipper_vt, scene_gl_vt) // (ctxt, loc, scene)
+  | DataSet of (string, string) // (name, mode)
+
 
 macdef T (x) = GLfloat_of_float ,(x)
 
