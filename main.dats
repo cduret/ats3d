@@ -5,17 +5,19 @@ staload "contrib/GLFW/SATS/glfw.sats"
 staload "gl/SATS/matrix.sats"
 staload "gl/SATS/core.sats"
 staload "gl/SATS/engine.sats"
+staload "util/SATS/array_ptr.sats"
 staload "util/SATS/scene_zipper.sats"
 
 staload "util/SATS/number.sats"
 #include "util/HATS/number.hats"
 #include "gl/HATS/number.hats"
 
-staload _(*anonymous*)="prelude/DATS/array.dats"
-staload _(*anonymous*) = "gl/DATS/matrix.dats"
-staload _(*anonymous*) = "gl/DATS/core.dats"
-staload _(*anonymous*) = "gl/DATS/engine.dats"
-staload _(*anonymous*) = "util/DATS/scene_zipper.dats"
+staload _(*anon*)="prelude/DATS/array.dats"
+staload _(*anon*) = "gl/DATS/matrix.dats"
+staload _(*anon*) = "gl/DATS/core.dats"
+staload _(*anon*) = "gl/DATS/engine.dats"
+staload _(*anon*) = "util/DATS/array_ptr.dats"
+staload _(*anon*) = "util/DATS/scene_zipper.dats"
 
 // new
 dataviewtype world_vt =
@@ -100,30 +102,30 @@ end // of setup_glfw
 fun gl_main(v_position_attribute: GLuint, f_color_uniform: GLint,
             mv_matrix_uniform: GLint, p_matrix_uniform: GLint,
             projection_matrix: matrix4_t(GLfloat), modelview_matrix: matrix4_t(GLfloat)): void = let
-  var !bt = @[GLfloat](T 0.0f,  T 1.0f,  T 0.0f, 
-                       T ~1.0f, T ~1.0f, T 0.0f,
-                       T 1.0f,  T ~1.0f, T 0.0f)
-  val triangle_vertex_position_buffer = new_buf(!bt, 3, size_of_int 3)
-  var !bs = @[GLfloat](T 1.0f,  T 1.0f,  T 0.0f,
-                       T ~1.0f, T 1.0f,  T 0.0f,
-                       T 1.0f,  T ~1.0f, T 0.0f,
-                       T ~1.0f, T ~1.0,  T 0.0f)
-  val square_vertex_position_buffer = new_buf(!bs, 3, size_of_int 4)
+  var bt = array_ptr_new<GLfloat> $arrsz(T 0.0f,  T 1.0f,  T 0.0f,
+                                         T ~1.0f, T ~1.0f, T 0.0f,
+                                         T 1.0f,  T ~1.0f, T 0.0f)
+  val triangle_vertex_position_buffer = glc_new_buf(bt, 3, size_of_int 3)
+  var bs = array_ptr_new<GLfloat> $arrsz(T 1.0f,  T 1.0f,  T 0.0f,
+                                         T ~1.0f, T 1.0f,  T 0.0f,
+                                         T 1.0f,  T ~1.0f, T 0.0f,
+                                         T ~1.0f, T ~1.0,  T 0.0f)
+  val square_vertex_position_buffer = glc_new_buf(bs, 3, size_of_int 4)
   fn render():<cloref1> void = let
     val () = glClearColor(T 0.0f, T 0.0f, T 0.0f, T 1.0f)
     val () = glClear(GL_COLOR_BUFFER_BIT lor GL_DEPTH_BUFFER_BIT)
-    val () = bind_uniform_matrix4(p_matrix_uniform, projection_matrix)
+    val () = glc_bind_uniform_matrix4(p_matrix_uniform, projection_matrix)
 
-    val () = bind_uniform_float_vec4(f_color_uniform, vec4_create(T 1.0f, T 0.0f, T 0.0f, T 1.0f))
-    val () = bind_attribute(triangle_vertex_position_buffer, v_position_attribute)
-    val () = bind_uniform_matrix4(mv_matrix_uniform, modelview_matrix)
-    val () = draw(GL_TRIANGLES, triangle_vertex_position_buffer)
+    val () = glc_bind_uniform_float_vec4(f_color_uniform, vec4_create(T 1.0f, T 0.0f, T 0.0f, T 1.0f))
+    val () = glc_bind_attribute(triangle_vertex_position_buffer, v_position_attribute)
+    val () = glc_bind_uniform_matrix4(mv_matrix_uniform, modelview_matrix)
+    val () = glc_draw(GL_TRIANGLES, triangle_vertex_position_buffer)
 
-    val () = bind_uniform_float_vec4(f_color_uniform, vec4_create(T 1.0f, T 1.0f, T 0.0f, T 1.0f))
-    val () = bind_attribute(square_vertex_position_buffer, v_position_attribute)
-    val () = bind_uniform_matrix4(mv_matrix_uniform, mat4_translate(modelview_matrix, 
+    val () = glc_bind_uniform_float_vec4(f_color_uniform, vec4_create(T 1.0f, T 1.0f, T 0.0f, T 1.0f))
+    val () = glc_bind_attribute(square_vertex_position_buffer, v_position_attribute)
+    val () = glc_bind_uniform_matrix4(mv_matrix_uniform, mat4_translate(modelview_matrix, 
                                                                     vec3_create(T 3.0f, T 0.0f, T 0.0f)))
-    val () = draw(GL_TRIANGLE_STRIP, square_vertex_position_buffer)
+    val () = glc_draw(GL_TRIANGLE_STRIP, square_vertex_position_buffer)
 
     val () = glfwSwapBuffers()
   in end
@@ -151,38 +153,40 @@ implement main() = let
     val (vbox pf|p) = array_get_view_ptr(m)
   in $effmask_ref(print_array16(!p)) end
 
-  val FRAGMENT_SHADER = "precision mediump float;\n
+  val FRAGMENT_SHADER = sprintf("precision mediump float;\n
                            uniform vec4 vertexColor;\n
                            void main() \n
                            { \n
                                gl_FragColor = vertexColor;\n 
-                           } \n"
-  val VERTEX_SHADER = "attribute vec3 vPosition;\n
+                           } \n", @())
+  val VERTEX_SHADER = sprintf("attribute vec3 vPosition;\n
                          uniform mat4 uMVMatrix;\n
                          uniform mat4 uPMatrix;\n
                          void main(void) {\n
                            gl_Position = uPMatrix * uMVMatrix * vec4(vPosition, 1.0);\n
-                         }"
+                         }", @())
   val _ = setup_glfw()
   val projection_matrix = mat4_perspective(T 45.0f, T (640.0f / 480.0f), 
                                            T 0.1f, T 100.0f)
   val modelview_matrix1 = mat4_translate(mat4_identity(), 
                             vec3_create(T ~1.5f, T 0.0f, T ~7.0f))
-  val o_vshader = compile_vertex_shader(VERTEX_SHADER)
-  val o_fshader = compile_fragment_shader(FRAGMENT_SHADER)
+  val o_vshader = glc_compile_vertex_shader(VERTEX_SHADER)
+  val o_fshader = glc_compile_fragment_shader(FRAGMENT_SHADER)
 in
   if option_is_some(o_vshader) && option_is_some(o_fshader) then let
     val Some u_vertex_shader = o_vshader
     val vertex_shader = GLshader_of_GLuint u_vertex_shader
     val Some u_fragment_shader = o_fshader
     val fragment_shader = GLshader_of_GLuint u_fragment_shader
-    val o_program = make_program(vertex_shader, fragment_shader)
+    val o_program = glc_make_program(vertex_shader, fragment_shader)
   in
     if option_is_some(o_program) then let
       val Some u_program = o_program
       val program: GLprogram = GLprogram_of_GLuint u_program
       val () = glUseProgram program
-      val v_position_attribute = setup_attribute(program, "vPosition")
+      val position = sprintf("vPosition", @())
+      val v_position_attribute = glc_setup_attribute(program, position)
+      val () = strptr_free position
       val f_color_uniform = glGetUniformLocation(program, "vertexColor")
       val mv_matrix_uniform = glGetUniformLocation(program, "uMVMatrix")
       val p_matrix_uniform = glGetUniformLocation(program, "uPMatrix")

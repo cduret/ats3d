@@ -1,10 +1,12 @@
 #define ATS_DYNLOADFLAG 0 // no need for dynloading at run-time
+//staload "prelude/SATS/array.sats"
 staload "util/SATS/scene_zipper.sats"
 staload "gl/SATS/engine.sats"
-staload "prelude/SATS/array.sats"
+staload "gl/SATS/matrix.sats"
 
-staload _(*anonymous*)="prelude/DATS/array.dats"
+//staload _(*anonymous*)="prelude/DATS/array.dats"
 staload _(*anonymous*)="prelude/DATS/list_vt.dats"
+staload _(*anonymous*)="gl/DATS/matrix.dats"
 
 implement zip_free(loc) = case+ loc of
   | ~Top () => ()
@@ -22,20 +24,20 @@ implement zip_free(loc) = case+ loc of
     val () = strptr_free kind
     val () = zip_free path
   }
-  | ~NodeTransform (_, path) => () where {
-    // add linear matrix !!
+  | ~NodeTransform (matrix, path) => () where {
+    val () = mat4_vt_delete matrix
     val () = zip_free path
   }
-  | ~NodeScale (_, path) => () where {
-    // add linear matrix !!
+  | ~NodeScale (scale, path) => () where {
+    val () = vec3_vt_delete scale
     val () = zip_free path
   }
-  | ~NodeRotate (_, path) => () where {
-    // add linear matrix !!
+  | ~NodeRotate (rotate, path) => () where {
+    val () = vec3_vt_delete rotate
     val () = zip_free path
   }
-  | ~NodeTranslate (_, path) => () where {
-    // add linear matrix !!
+  | ~NodeTranslate (translate, path) => () where {
+    val () = vec3_vt_delete translate
     val () = zip_free path
   }
   | ~NodeGroup (left, path, right) => () where {
@@ -378,20 +380,20 @@ implement zip_free_gl(loc) = case+ loc of
     val () = strptr_free kind
     val () = zip_free_gl path
   }
-  | ~NodeTransformGL (_, _, path) => () where {
-    // add linear matrix !!
+  | ~NodeTransformGL (_, matrix, path) => () where {
+    val () = mat4_vt_delete matrix
     val () = zip_free_gl path
   }
-  | ~NodeScaleGL (_, _, path) => () where {
-    // add linear matrix !!
+  | ~NodeScaleGL (_, scale, path) => () where {
+    val () = vec3_vt_delete scale
     val () = zip_free_gl path
   }
-  | ~NodeRotateGL (_, _, path) => () where {
-    // add linear matrix !!
+  | ~NodeRotateGL (_, rotate, path) => () where {
+    val () = vec3_vt_delete rotate
     val () = zip_free_gl path
   }
-  | ~NodeTranslateGL (_, _, path) => () where {
-    // add linear matrix !!
+  | ~NodeTranslateGL (_, translate, path) => () where {
+    val () = vec3_vt_delete translate
     val () = zip_free_gl path
   }
   | ~NodeGroupGL (left, path, right) => () where {

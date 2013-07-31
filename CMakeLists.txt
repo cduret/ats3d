@@ -17,6 +17,8 @@ ATS_COMPILE (TEST_SRC
              contrib/GL/SATS/gl.sats
              contrib/GLEXT/SATS/glext.sats
              contrib/GLFW/SATS/glfw.sats
+             util/SATS/array_ptr.sats
+             util/DATS/array_ptr.dats
              util/SATS/rbtree.sats
              util/DATS/rbtree.dats
              util/SATS/cont.sats

@@ -3,11 +3,15 @@
 staload "prelude/SATS/string.sats"
 staload "contrib/GL/SATS/gl.sats"
 staload "contrib/GLEXT/SATS/glext.sats"
+staload "util/SATS/array_ptr.sats"
 staload "gl/SATS/core.sats"
 staload "gl/SATS/matrix.sats"
 
-staload _(*anonymous*)="prelude/DATS/array.dats"
-staload _(*anonymous*) = "gl/DATS/matrix.dats"
+staload UN = "prelude/SATS/unsafe.sats"
+
+staload _(*anon*)="prelude/DATS/array.dats"
+staload _(*anon*) = "util/DATS/array_ptr.dats"
+staload _(*anon*) = "gl/DATS/matrix.dats"
 
 staload "util/SATS/number.sats"
 #include "gl/HATS/number.hats"
@@ -51,10 +55,10 @@ glVertexAttribPointerBuffer {a:t@ype} (
 // end of [glVertexAttribPointerBuffer]
 
 extern fun 
-glBufferDataConvert {n:nat} {a:t@ype} (
+glBufferDataConvert {l: addr} {a:t@ype}  (
   target: GLenum, type: GLenum_type a
 , tsz: size_t (sizeof a)
-, sz: size_t, data: &(@[a][n]), usage: GLenum
+, sz: size_t, data: ptr l, usage: GLenum
 ) : void
   = "glBufferData_convert"
 // end of [fun]
@@ -66,18 +70,19 @@ fun glDrawElementsBuffer {a:t@ype} (
   = "glDrawElementsBuffer"
 // end of [glDrawElementsBuffer]
 
-implement check_error(msg) = let
+implement glc_check_error(msg) = let
   val v = glGetError()
+  val () = case+ 0 of
+    | _ when v = GL_INVALID_ENUM => prerrf("%s : GL_INVALID_ENUM\n", @($UN.castvwtp1 {string} (msg)))
+    | _ when v = GL_INVALID_VALUE => prerrf("%s : GL_INVALID_VALUE\n", @($UN.castvwtp1 {string} (msg)))
+    | _ when v = GL_INVALID_OPERATION => prerrf("%s : GL_INVALID_OPERATION\n", @($UN.castvwtp1 {string} (msg)))
+    | _ when v = GL_OUT_OF_MEMORY => prerrf("%s : GL_OUT_OF_MEMORY\n", @($UN.castvwtp1 {string} (msg)))
+    | _ => ()
 in
-  case+ 0 of
-  | _ when v = GL_INVALID_ENUM => prerrf("%s : GL_INVALID_ENUM\n", @(msg))
-  | _ when v = GL_INVALID_VALUE => prerrf("%s : GL_INVALID_VALUE\n", @(msg))
-  | _ when v = GL_INVALID_OPERATION => prerrf("%s : GL_INVALID_OPERATION\n", @(msg))
-  | _ when v = GL_OUT_OF_MEMORY => prerrf("%s : GL_OUT_OF_MEMORY\n", @(msg))
-  | _ => ()
+  strptr_free msg
 end
 
-implement print_shader_log(shader) = let
+implement glc_print_shader_log(shader) = let
   #define BUFSZ 1024
   var !p_log with pf_log = @[byte][BUFSZ]()
   var len: GLsizei // uninitialized
@@ -90,25 +95,24 @@ implement print_shader_log(shader) = let
 in
 end
 
-implement compile_shader(code, shader) = let
-    val (fpf | pstr) = string_takeout_ptr (code)
-    val () = glShaderSource__string(shader, pstr)
-    prval () = fpf(pstr)
+implement glc_compile_shader(code, shader) = let
+    val () = glShaderSource__string(shader, code)
     val () = glCompileShader(shader)
     var shader_ok: GLint
     val () = glGetShaderiv(shader, GL_COMPILE_STATUS, shader_ok)
+    val () = strptr_free code
   in
     if int_of_GLint shader_ok = 0 then let
-      val () = print_shader_log(shader)
+      val () = glc_print_shader_log(shader)
       val () = glDeleteShader(shader)
     in None
     end else Some(GLuint_of_GLshader shader)//success
   end
 
-implement compile_fragment_shader(src) =  compile_shader(src, glCreateShader(GL_FRAGMENT_SHADER))
-implement compile_vertex_shader(src) =  compile_shader(src, glCreateShader(GL_VERTEX_SHADER))
+implement glc_compile_fragment_shader(src) =  glc_compile_shader(src, glCreateShader(GL_FRAGMENT_SHADER))
+implement glc_compile_vertex_shader(src) =  glc_compile_shader(src, glCreateShader(GL_VERTEX_SHADER))
 
-implement make_program(vertex_shader, fragment_shader) = let
+implement glc_make_program(vertex_shader, fragment_shader) = let
   val program = glCreateProgram()
   val () = glAttachShader(program, vertex_shader )
   val () = glAttachShader(program, fragment_shader )
@@ -127,30 +131,29 @@ in
 end
 
 (*
-implement use_program(program) = let 
+implement glc_use_program(program) = let 
   val () = glUseProgram(program)
   extern castfn __leak3 (x: GLprogram): void
 in __leak3(program) end
 *)
 
-implement new_buf(buffer, size, num_items) = let
+implement glc_new_buf(buffer, size, num_items) = let
   var vertex_buffer: GLbuffer
   val () = glGenBuffer vertex_buffer
   val () = glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer)
   val () = glBufferDataConvert(GL_ARRAY_BUFFER, GL_FLOAT, sizeof<GLfloat>, 
-                               size*num_items, buffer, GL_STATIC_DRAW)
-  val () = check_error("new_buf")
-  //extern castfn __leak3 (x: GLbuffer): void
-  //val () = __leak3(vertex_buffer)
+                               size*num_items, array_ptr_data<GLfloat> buffer, GL_STATIC_DRAW)
+  val () = glc_check_error(sprintf("new_buf", @()))
+  val () = array_ptr_delete<GLfloat> buffer
  in @(GLuint_of_GLbuffer vertex_buffer, size, num_items) end 
 
-implement setup_attribute(program, attribute) = let
-  val position: GLuint = GLuint_of_uint(uint_of_int(int_of_GLint(
-                           glGetAttribLocation(program, attribute))))
+implement glc_setup_attribute(program, attribute) = let
+  val position = GLuint_of_uint(uint_of_int(int_of_GLint(
+                           glGetAttribLocation(program, $UN.castvwtp1 {string} (attribute)))))
   val () = glEnableVertexAttribArray(position)
 in position end
 
-implement bind_attribute(buffer, attribute) = let
+implement glc_bind_attribute(buffer, attribute) = let
   val vbuf = GLbuffer_of_GLuint(buffer.0)
   val () = glBindBuffer(GL_ARRAY_BUFFER, vbuf)
   extern castfn __leak3 (x: GLbuffer): void
@@ -159,77 +162,77 @@ in
   glVertexAttribPointerBuffer(attribute, GLsizei_of_int buffer.1, GL_FLOAT, GLsizei_of_int 0, GLsizeiptr_of_int1 0)
 end
 
-implement draw(type, buffer) =
+implement glc_draw(type, buffer) =
 glDrawArrays(type, GLint_of_int 0, GLsizei_of_size buffer.2)
 
-implement bind_uniform_int(location, value) = glUniform1i(location, value)
-implement bind_uniform_float(location, value) = glUniform1f(location, value)
+implement glc_bind_uniform_int(location, value) = glUniform1i(location, value)
+implement glc_bind_uniform_float(location, value) = glUniform1f(location, value)
 
-implement bind_uniform_int_vec2(location, value) = let
+implement glc_bind_uniform_int_vec2(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniform2iv(location, GLsizei_of_int1 1, !p))
 end
 
-implement bind_uniform_int_vec3(location, value) = let
+implement glc_bind_uniform_int_vec3(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniform3iv(location, GLsizei_of_int1 1, !p))
 end
 
-implement bind_uniform_int_vec4(location, value) = let
+implement glc_bind_uniform_int_vec4(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniform4iv(location, GLsizei_of_int1 1, !p))
 end
 
-implement bind_uniform_float_vec2(location, value) = let
+implement glc_bind_uniform_float_vec2(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniform2fv(location, GLsizei_of_int1 1, !p))
 end
 
-implement bind_uniform_float_vec3(location, value) = let
+implement glc_bind_uniform_float_vec3(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniform3fv(location, GLsizei_of_int1 1, !p))
 end
 
-implement bind_uniform_float_vec4(location, value) = let
+implement glc_bind_uniform_float_vec4(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniform4fv(location, GLsizei_of_int1 1, !p))
 end
 
-implement bind_uniform_matrix2(location, value) = let
+implement glc_bind_uniform_matrix2(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniformMatrix2fv(location, GLsizei_of_int1 1, GL_FALSE, !p))
 end
 
-implement bind_uniform_matrix3(location, value) = let
+implement glc_bind_uniform_matrix3(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniformMatrix3fv(location, GLsizei_of_int1 1, GL_FALSE, !p))
 end
 
-implement bind_uniform_matrix4(location, value) = let
+implement glc_bind_uniform_matrix4(location, value) = let
   val (vbox pf|p) = array_get_view_ptr(value)
 in
   $effmask_ref(glUniformMatrix4fv(location, GLsizei_of_int1 1, GL_FALSE, !p))
 end
 
-implement perspective(location, fov, ratio, near, far) = let
+implement glc_perspective(location, fov, ratio, near, far) = let
   val pm = mat4_perspective<GLfloat>(fov, ratio, near, far)
-  val () = bind_uniform_matrix4(location, pm)
+  val () = glc_bind_uniform_matrix4(location, pm)
 in pm end
 
-implement camera(location, eye, center, up) = let
+implement glc_camera(location, eye, center, up) = let
   val mvm = mat4_lookat<GLfloat>(eye, center, up)
-  val () = bind_uniform_matrix4(location, mvm)
+  val () = glc_bind_uniform_matrix4(location, mvm)
 in mvm end
 
-implement clear_all(r, g, b, a) = let
+implement glc_clear_all(r, g, b, a) = let
   val () = glClearColor(r, g, b, a)
   val () = glClearDepth(GLclampd_of_double 1.0)
   val () = glEnable(GL_DEPTH_TEST)
@@ -237,60 +240,61 @@ implement clear_all(r, g, b, a) = let
   val () = glClear(GL_COLOR_BUFFER_BIT lor GL_DEPTH_BUFFER_BIT)
 in end
 
-implement setup_uniform(program, uniform) = glGetUniformLocation(program, uniform)
+implement glc_setup_uniform(program, uniform) = glGetUniformLocation(program, $UN.castvwtp1 {string} (uniform))
 
-implement new_ibuf(buffer, size, num_items) = let
+implement glc_new_ibuf(buffer, size, num_items) = let
   var index_buffer: GLbuffer
   val () = glGenBuffer index_buffer
   val () = glBindBuffer(GL_ARRAY_BUFFER, index_buffer)
   val () = glBufferDataConvert(GL_ARRAY_BUFFER, GL_UNSIGNED_SHORT, sizeof<GLushort>, 
-                               size*num_items, buffer, GL_STATIC_DRAW)
-  val () = check_error("new_ibuf")
+                               size*num_items, array_ptr_data<GLushort> buffer, GL_STATIC_DRAW)
+  val () = glc_check_error(sprintf("new_buf", @()))
+  val () = array_ptr_delete<GLushort> buffer
  in @(GLuint_of_GLbuffer index_buffer, size, num_items) end 
 
-implement bind_index(index_buffer) = let
+implement glc_bind_index(index_buffer) = let
   val ibuf = GLbuffer_of_GLuint(index_buffer.0)
   val () = glBindBuffer(GL_ARRAY_BUFFER, ibuf)
   extern castfn __leak3 (x: GLbuffer): void
 in __leak3(ibuf) end
 
-implement draw_indices(mode, index_buffer) = 
+implement glc_draw_indices(mode, index_buffer) = 
     glDrawElementsBuffer(mode, GLsizei_of_size index_buffer.2, GL_UNSIGNED_SHORT)
 
-implement set_matrix(location, mvm, mat4) = let
+implement glc_set_matrix(location, mvm, mat4) = let
   val new_mvm = mat4_multiply(mvm, mat4)
-  val () = bind_uniform_matrix4(location, new_mvm)
+  val () = glc_bind_uniform_matrix4(location, new_mvm)
 in new_mvm end
 
-implement translate(location, mvm, x, y, z) = let
+implement glc_translate(location, mvm, x, y, z) = let
   val new_mvm = mat4_translate(mvm, vec3_create(x, y, z))
-  val () = bind_uniform_matrix4(location, new_mvm)
+  val () = glc_bind_uniform_matrix4(location, new_mvm)
 in new_mvm end
 
-implement rotate(location, mvm, angle, axis) = let
+implement glc_rotate(location, mvm, angle, axis) = let
   val new_mvm = mat4_rotate(mvm, angle, axis)
-  val () = bind_uniform_matrix4(location, new_mvm)
+  val () = glc_bind_uniform_matrix4(location, new_mvm)
 in new_mvm end
 
-implement rotate_x(location, mvm, angle) =
-  rotate(location, mvm, angle, vec3_create(GLfloat_of_float 1.0f, 
+implement glc_rotate_x(location, mvm, angle) =
+  glc_rotate(location, mvm, angle, vec3_create(GLfloat_of_float 1.0f, 
                                            GLfloat_of_float 0.0f, 
                                            GLfloat_of_float 0.0f))
 
-implement rotate_y(location, mvm, angle) =
-  rotate(location, mvm, angle, vec3_create(GLfloat_of_float 0.0f, 
+implement glc_rotate_y(location, mvm, angle) =
+  glc_rotate(location, mvm, angle, vec3_create(GLfloat_of_float 0.0f, 
                                            GLfloat_of_float 1.0f, 
                                            GLfloat_of_float 0.0f))
 
-implement rotate_z(location, mvm, angle) =
-  rotate(location, mvm, angle, vec3_create(GLfloat_of_float 0.0f, 
+implement glc_rotate_z(location, mvm, angle) =
+  glc_rotate(location, mvm, angle, vec3_create(GLfloat_of_float 0.0f, 
                                            GLfloat_of_float 0.0f, 
                                            GLfloat_of_float 1.0f))
 
-implement scale(location, mvm, axis) = let
+implement glc_scale(location, mvm, axis) = let
   val new_mvm = mat4_scale(mvm, axis)
-  val () = bind_uniform_matrix4(location, new_mvm)
+  val () = glc_bind_uniform_matrix4(location, new_mvm)
 in new_mvm end
 
-implement normal_matrix(mvm) = 
+implement glc_normal_matrix(mvm) = 
   mat4_transpose(mat4_inverse mvm)
