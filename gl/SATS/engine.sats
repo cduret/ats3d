@@ -1,7 +1,7 @@
 staload "contrib/GL/SATS/gl.sats"
 staload "contrib/GLEXT/SATS/glext.sats"
 staload "util/SATS/array_ptr.sats"
-staload "gl/SATS/matrix.sats"
+staload "gl/SATS/matrix_vt.sats"
 staload "gl/SATS/core.sats"
 
 dataviewtype uniform_data_vt =

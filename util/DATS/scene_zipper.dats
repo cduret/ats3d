@@ -2,11 +2,11 @@
 //staload "prelude/SATS/array.sats"
 staload "util/SATS/scene_zipper.sats"
 staload "gl/SATS/engine.sats"
-staload "gl/SATS/matrix.sats"
+staload "gl/SATS/matrix_vt.sats"
 
 //staload _(*anonymous*)="prelude/DATS/array.dats"
 staload _(*anonymous*)="prelude/DATS/list_vt.dats"
-staload _(*anonymous*)="gl/DATS/matrix.dats"
+staload _(*anonymous*)="gl/DATS/matrix_vt.dats"
 
 implement zip_free(loc) = case+ loc of
   | ~Top () => ()

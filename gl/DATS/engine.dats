@@ -4,12 +4,12 @@ staload "gl/SATS/engine.sats"
 staload "util/SATS/array_ptr.sats"
 staload "contrib/GL/SATS/gl.sats"
 staload "gl/SATS/core.sats"
-staload "gl/SATS/matrix.sats"
+staload "gl/SATS/matrix_vt.sats"
 staload "contrib/GLEXT/SATS/glext.sats"
 
 staload _(*anonymous*)="prelude/DATS/list_vt.dats"
 staload _(*anonymous*)="util/DATS/array_ptr.dats"
-staload _(*anonymous*)="gl/DATS/matrix.dats"
+staload _(*anonymous*)="gl/DATS/matrix_vt.dats"
 
 implement ats3d_scene_free(scene) = case+ scene of
   | ~Fail (msg) => strptr_free(msg)

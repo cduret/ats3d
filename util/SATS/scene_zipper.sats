@@ -1,6 +1,6 @@
 staload "gl/SATS/engine.sats"
 staload "contrib/GL/SATS/gl.sats"
-staload "gl/SATS/matrix.sats"
+staload "gl/SATS/matrix_vt.sats"
 
 (*dataviewtype either_vt (a: vt0p, b: vt0p) =
   Left (a, b) of (a)

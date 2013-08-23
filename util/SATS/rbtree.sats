@@ -1,20 +1,24 @@
-datatype color = Black | Red
+#define BLACK 0
+#define RED 1
+sortdef color = {c:nat | c <= 1}
 
-datatype treemap (a:t@ype, b: t@ype) =
-  EmptyMap(a, b) of ()
-  | TreeMap(a,b) of (color, treemap(a, b), a, b, treemap(a, b))
+#define ATS_DYNLOADFLAG 0 // no need for dynloading at run-time
 
-datatype treeset (a:t@ype) =
-  EmptySet(a) of ()
-  | TreeSet(a) of (color, treeset a , a, treeset a )
+dataviewtype treeset_vt (a:t@ype, int(*color*)) =
+  EmptySet(a, BLACK) of ()
+  | {c, cl, cr: color} TreeSet(a, c) of (int c, treeset_vt(a, cl) , a, treeset_vt(a, cr))
 
-fun{a:t@ype} member_set (x:a, s: treeset a ): bool
-fun{a:t@ype} balance_set (t: @(color, treeset a, a, treeset a)): treeset a
-fun{a:t@ype} insert_set (x:a, s: treeset a): treeset a
-fun{a:t@ype} size_set(s: treeset a): int
+datatype treemap_vt (a:t@ype, b: t@ype, int(*color*)) =
+  EmptyMap(a, b, BLACK) of ()
+  | {c, cl, cr: color} TreeMap(a,b,c) of (int c, treemap_vt(a, b, cl), a, b, treemap_vt(a, b, cr))
 
-fun{a, b:t@ype} member_map (x:a, s: treemap(a,b)): bool
-fun{a, b:t@ype} balance_map (t: @(color, treemap(a,b), a, b, treemap(a,b))): treemap(a,b)
-fun{a, b:t@ype} insert_map (x:a, y:b, s: treemap(a,b)): treemap(a,b)
-fun{a, b:t@ype} size_map(s: treemap(a,b)): int
-fun{a, b:t@ype} get_value_map(s: treemap(a, b), k: a): Option b
+fun{a:t@ype} member_set{c: color} (x:a, s: !treeset_vt(a,c)): bool
+fun{a:t@ype} balance_set{c, cl, cr: color} (col: int c, l: treeset_vt(a,cl), x: a, r: treeset_vt(a,cr)): [c: color] treeset_vt(a,c)
+fun{a:t@ype} insert_set{c: color} (x:a, s: treeset_vt(a,c)): [c: color] treeset_vt(a,c)
+fun{a:t@ype} size_set{c: color} (s: !treeset_vt(a,c)): int
+
+fun{a, b:t@ype} member_map{c: color} (x:a, s: !treemap_vt(a,b,c)): bool
+fun{a, b:t@ype} balance_map{c, cl, cr: color} (col: int c, l: treemap_vt(a,b,cl), k: a, v: b, r: treemap_vt(a,b,cr)): [c: color] treemap_vt(a,b,c)
+fun{a, b:t@ype} insert_map{c: color} (x:a, y:b, s: treemap_vt(a,b,c)): [c: color] treemap_vt(a,b,c)
+fun{a, b:t@ype} size_map{c: color} (s: !treemap_vt(a,b,c)): int
+fun{a, b:t@ype} get_value_map{c: color} (s: !treemap_vt(a, b,c), k: a): Option b

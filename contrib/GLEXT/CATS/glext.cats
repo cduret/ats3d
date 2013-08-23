@@ -15,18 +15,18 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
-typedef GLintptr ats_GLintptr_type;
-typedef GLsizeiptr ats_GLsizeiptr_type;
+typedef GLintptr atstype_GLintptr;
+typedef GLsizeiptr atstype_GLsizeiptr;
 
 ATSinline()
-ats_GLsizeiptr_type
-atsctrb_GLsizeiptr_of_uintptr (ats_uintptr_type x) { return (ats_GLsizeiptr_type) x ; }
+atstype_GLsizeiptr
+atsctrb_GLsizeiptr_of_uintptr (atstype_uintptr x) { return (atstype_GLsizeiptr) x ; }
 
 //
 
 ATSinline()
-ats_GLsizeiptr_type
-atsctrb_GLsizeiptr_of_int (ats_int_type x) { return x ; }
+atstype_GLsizeiptr
+atsctrb_GLsizeiptr_of_int (atstype_int x) { return x ; }
 
 #define atsctrb_GLtexture_zero() ((GLuint)0)
 #define atsctrb_GLtexture_is_zero(x) ((x) == ((GLuint)0))
@@ -47,8 +47,8 @@ atsctrb_GLsizeiptr_of_int (ats_int_type x) { return x ; }
 #define atsctrb_glBufferData glBufferData
 #define atsctrb_glBufferSubData glBufferSubData
 #define atsctrb_glCheckFramebufferStatus glCheckFramebufferStatus
-#define atsctrb_glClear glClear
-#define atsctrb_glClearColor glClearColor
+// #define atsctrb_glClear glClear
+// #define atsctrb_glClearColor glClearColor
 #define atsctrb_glClearDepthf glClearDepthf
 #define atsctrb_glClearStencil glClearStencil
 #define atsctrb_glColorMask glColorMask
@@ -62,18 +62,18 @@ atsctrb_GLsizeiptr_of_int (ats_int_type x) { return x ; }
 #define atsctrb_glCullFace glCullFace
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glDeleteBuffer
-  (ats_GLuint_type buffer) {
+  (atstype_GLuint buffer) {
   glDeleteBuffers (1, (GLuint*)&buffer);
 } // end of [atsctrb_glDeleteBuffer]
 
 #define atsctrb_glDeleteBuffers glDeleteBuffers
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glDeleteFramebuffer
-  (ats_GLuint_type framebuffer) {
+  (atstype_GLuint framebuffer) {
   glDeleteFramebuffers (1, (GLuint*)&framebuffer);
 } // end of [atsctrb_glDeleteFramebuffer]
 
@@ -82,9 +82,9 @@ atsctrb_glDeleteFramebuffer
 #define atsctrb_glDeleteProgram glDeleteProgram
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glDeleteRenderbuffer
-  (ats_GLuint_type renderbuffer) {
+  (atstype_GLuint renderbuffer) {
   glDeleteRenderbuffers (1, (GLuint*)&renderbuffer);
 } // end of [atsctrb_glDeleteRenderbuffer]
 
@@ -107,9 +107,9 @@ atsctrb_glDeleteRenderbuffer
 #define atsctrb_glFontFace glFontFace
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glGenBuffer
-  (ats_ref_type buffer) {
+  (atstype_ref buffer) {
   glGenBuffers(1, (GLuint*)buffer);
 } // end of [atsctrb_glGenBuffer]
 
@@ -117,18 +117,18 @@ atsctrb_glGenBuffer
 #define atsctrb_glGenerateMipmap glGenerateMipMap
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glGenFramebuffer
-  (ats_ref_type framebuffer) {
+  (atstype_ref framebuffer) {
   glGenFramebuffers(1, (GLuint*)framebuffer);
 } // end of [atsctrb_glGenFramebuffer]
 
 #define atsctrb_glGenFramebuffers glGenFramebuffers
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glGenRenderbuffer
-  (ats_ref_type renderbuffer) {
+  (atstype_ref renderbuffer) {
   glGenRenderbuffers(1, (GLuint*)renderbuffer);
 } // end of [atsctrb_glGenRenderbuffer]
 
@@ -178,9 +178,9 @@ atsctrb_glGenRenderbuffer
 #define atsctrb_glShaderBinary glShaderBinary
 
 ATSinline()
-ats_void_type
+atstype_void
   atsctrb_glShaderSource__string
-  (ats_GLuint_type shader, ats_ptr_type str) {
+  (atstype_GLuint shader, atstype_ptr str) {
   glShaderSource (shader, 1, (const GLchar **)&str, NULL);
 } // end of [atsctrb_glShaderSource__string]
 

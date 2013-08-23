@@ -51,116 +51,116 @@ extern void exit (int status) ; // see [stdlib.h]
 
 /* ****** ****** */
 
-typedef GLboolean ats_GLboolean_type ;
+typedef GLboolean atstype_GLboolean ;
 
-typedef GLenum ats_GLenum_type ;
-typedef GLbitfield ats_GLbitfield_type ;
+typedef GLenum atstype_GLenum ;
+typedef GLbitfield atstype_GLbitfield ;
 
-typedef GLdouble ats_GLdouble_type ;
-typedef GLfloat ats_GLfloat_type ;
-typedef GLint ats_GLint_type ;
-typedef GLshort ats_GLshort_type ;
+typedef GLdouble atstype_GLdouble ;
+typedef GLfloat atstype_GLfloat ;
+typedef GLint atstype_GLint ;
+typedef GLshort atstype_GLshort ;
 
-typedef GLbyte ats_GLbyte_type ;
-typedef GLubyte ats_GLubyte_type ;
-typedef GLuint ats_GLuint_type ;
-typedef GLushort ats_GLushort_type ;
+typedef GLbyte atstype_GLbyte ;
+typedef GLubyte atstype_GLubyte ;
+typedef GLuint atstype_GLuint ;
+typedef GLushort atstype_GLushort ;
 
-typedef GLsizei ats_GLsizei_type ;
+typedef GLsizei atstype_GLsizei ;
 
-typedef GLclampd ats_GLclampd_type ;
-typedef GLclampf ats_GLclampf_type ;
+typedef GLclampd atstype_GLclampd ;
+typedef GLclampf atstype_GLclampf ;
 
 /* ****** ****** */
 
 ATSinline()
-ats_int_type
+atstype_int
 atsctrb_int_of_GLenum (GLenum x) { return x ; }
 
 //
 
 ATSinline()
-ats_bool_type
+atstype_bool
 atsctrb_eq_GLenum_GLenum
   (GLenum x1, GLenum x2) {
-  return (x1 == x2 ? ats_true_bool : ats_false_bool) ;
+  return (x1 == x2 ? atsbool_true : atsbool_false) ;
 } // end of [atsctrb_eq_GLenum_GLenum]
 
 ATSinline()
-ats_bool_type
+atstype_bool
 atsctrb_neq_GLenum_GLenum
   (GLenum x1, GLenum x2) {
-  return (x1 != x2 ? ats_true_bool : ats_false_bool) ;
+  return (x1 != x2 ? atsbool_true : atsbool_false) ;
 } // end of [atsctrb_neq_GLenum_GLenum]
 
 //
 
 ATSinline()
-ats_GLbyte_type
+atstype_GLbyte
 atsctrb_GLbyte_of_int (int x) { return x ; }
 
 //
 
 ATSinline()
-ats_GLubyte_type
+atstype_GLubyte
 atsctrb_GLubyte_of_int (int x) { return x ; }
 
 ATSinline()
-ats_GLubyte_type
+atstype_GLubyte
 atsctrb_GLubyte_of_uint (unsigned int x) { return x ; }
 
 //
 
 ATSinline()
-ats_GLshort_type
+atstype_GLshort
 atsctrb_GLshort_of_int (int x) { return x ; }
 
 //
 
 ATSinline()
-ats_GLushort_type
+atstype_GLushort
 atsctrb_GLushort_of_int (int x) { return x ; }
 
 ATSinline()
-ats_GLushort_type
+atstype_GLushort
 atsctrb_GLushort_of_uint (unsigned int x) { return x ; }
 
 //
 
 ATSinline()
-ats_GLsizei_type
+atstype_GLsizei
 atsctrb_GLsizei_of_int (int x) { return x ; }
 
 //
 
 ATSinline()
-ats_GLsizei_type
-atsctrb_GLsizei_of_size (ats_size_type x) { return x ; }
+atstype_GLsizei
+atsctrb_GLsizei_of_size (atstype_size x) { return x ; }
 
 //
 
 ATSinline()
-ats_GLdouble_type
+atstype_GLdouble
 atsctrb_GLdouble_of_int (int x) { return x ; }
 
 //
 
 ATSinline()
-ats_GLfloat_type
+atstype_GLfloat
 atsctrb_GLfloat_of_int (int x) { return x ; }
 
 ATSinline()
-ats_GLfloat_type
+atstype_GLfloat
 atsctrb_GLfloat_of_double (double x) { return x ; }
 
 ATSinline()
-ats_GLclampf_type
+atstype_GLclampf
 atsctrb_GLclampf_of_double (double x) { return x ; }
 
 //
 
 ATSinline()
-ats_GLbitfield_type
+atstype_GLbitfield
 atsctrb_lor_GLbitfield_GLbitfield
   (GLbitfield b1, GLbitfield b2) { return (b1 | b2) ; }
 // end of [atsctrb_lor_GLbitfield_GLbitfield]
@@ -354,13 +354,13 @@ atsctrb_glNewList_new
   glNewList (lst, mode) ; return lst ;
 } // end of [atsctrb_glNewList_new]
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glNewList_clear
   (GLuint lst, GLenum mode) { glNewList (lst, mode) ; return ; }
 // end of [atsctrb_glNewList_clear]
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glDeleteList
   (GLuint lst) { glDeleteLists (lst, 1) ; return ; }
 // end of [atsctrb_glDeleteList]
@@ -597,18 +597,18 @@ atsctrb_glDeleteList
 //
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glGenTexture
-  (ats_ref_type texture) {
+  (atstype_ref texture) {
   glGenTextures(1, (GLuint*)texture) ; return ;
 } // end of [atsctrb_glGenTexture]
 
 #define atsctrb_glGenTextures glGenTextures
 
 ATSinline()
-ats_void_type
+atstype_void
 atsctrb_glDeleteTexture
-  (ats_GLuint_type texture) {
+  (atstype_GLuint texture) {
   glDeleteTextures(1, (GLuint*)&texture) ; return ;
 } // end of [atsctrb_glDeleteTexture]
 

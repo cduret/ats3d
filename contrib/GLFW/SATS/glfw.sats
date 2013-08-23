@@ -2,6 +2,8 @@
 #include "contrib/GLFW/CATS/glfw.cats"
 %}
 
+#define ATS_DYNLOADFLAG 0 // no dynamic loading at run-time
+
 fun glfwInit(): int = "mac#_glfwInit"
 fun glfwTerminate(): void = "mac#_glfwTerminate"
 

@@ -17,17 +17,17 @@
 
 (* ****** ****** *)
 
-staload "../../GL/SATS/gl.sats"
+staload "contrib/GL/SATS/gl.sats"
 
-#define ATS_STALOADFLAG 0 // no staloading at run-time
+#define ATS_DYNLOADFLAG 0 // no dynamic loading at run-time
 
 abst@ype
-GLintptr = $extype"ats_GLinptr_type"
+GLintptr = $extype"atstype_GLinptr"
 
 (* ****** ****** *)
 
 abst@ype
-GLsizeiptr (i: int) = $extype"ats_GLsizeiptr_type"
+GLsizeiptr (i: int) = $extype"atstype_GLsizeiptr"
 typedef GLsizeiptr = [i:int] GLsizeiptr (i)
 
 (* BlendEquationSeparate *)
@@ -177,6 +177,10 @@ macdef GL_MAX_RENDERBUFFER_SIZE = $extval (GLenum, "GL_MAX_RENDERBUFFER_SIZE")
 macdef GL_INVALID_FRAMEBUFFER_OPERATION = $extval (GLenum, "GL_INVALID_FRAMEBUFFER_OPERATION")
 
 (* ****** ****** *)
+// missing from anairiats
+viewdef optvar_v (a:vt0p, l:addr) = option_v (a @ l, l > null)
+(* ****** ****** *)
+
 (* resource types *)
 
 absviewt@ype GLbuffer (int) = GLuint
@@ -313,12 +317,12 @@ fun glCheckFramebufferStatus (target: GLenum): GLenum
   = "mac#atsctrb_glCheckFramebufferStatus"
 // end of [glCheckFramebufferStatus]
 
-fun glClear (mask: GLbitfield): void = "mac#atsctrb_glClear"
-
+// already in gl.sats
+(*fun glClear (mask: GLbitfield): void = "mac#atsctrb_glClear"
 fun glClearColor (
   red: GLclampf, green: GLclampf, blue: GLclampf, alpha: GLclampf
 ) : void
-  = "mac#atsctrb_glClearColor"
+  = "mac#atsctrb_glClearColor" *)
 
 fun glClearDepthf (depth: GLclampf): void = "mac#atsctrb_glClearDepthf"
 
@@ -557,13 +561,17 @@ fun glGetProgramiv {i:int} (
 , params: &GLint? >> GLint
 ) : void = "mac#atsctrb_glGetProgramiv"
 
-fun glGetProgramInfoLog {i:int} {m:nat} {l1,l2:addr} (
+fun glGetProgramInfoLog {i:int} {m:nat} (*{l1,l2:addr} (
   pf1: !b0ytes m @ l1 >> strbuf (m, n) @ l1
 , pf2: !optvar_v (GLsizei?, l2) >> optvar_v (GLsizei n, l2)
 | program: !GLprogram i
 , bufsize: GLsizei m
 , length: ptr l2
-, infolog: ptr l1
+, infolog: ptr l1*) (
+  program: !GLprogram i
+, bufsize: GLsizei m
+, length: &GLsizei? >> GLsizei n
+, infolog: &b0ytes m >> strbuf (m, n)
 ) : #[n:nat | n < m] void
   = "mac#atsctrb_glGetProgramInfoLog"
 // end of [glGetProgramInfoLog]
@@ -588,6 +596,7 @@ fun glGetShaderiv {i:int} (
   = "mac#atsctrb_glGetShaderiv"
 // end of [glGetShaderiv]
 
+(*
 fun glGetShaderInfoLog {i:int} {m:nat} {l1,l2:addr} (
   pf1: !b0ytes m @ l1 >> strbuf (m, n) @ l1
 , pf2: !optvar_v (GLsizei?, l2) >> optvar_v (GLsizei n, l2)
@@ -595,6 +604,14 @@ fun glGetShaderInfoLog {i:int} {m:nat} {l1,l2:addr} (
 , bufsize: GLsizei
 , length: ptr l2
 , infolog: ptr l1
+) : #[n:nat | n < m] void
+  = "mac#atsctrb_glGetShaderInfoLog"
+*)
+fun glGetShaderInfoLog {i:int} {m:nat} (
+  shader: !GLshader i
+, bufsize: GLsizei
+, length: &GLsizei? >> GLsizei
+, infolog: &b0ytes m >> strbuf (m, n)
 ) : #[n:nat | n < m] void
   = "mac#atsctrb_glGetShaderInfoLog"
 // end of [glGetShaderInfoLog]
@@ -811,9 +828,9 @@ fun glTexSubImage2D
 
 (* ****** ****** *)
 
-typedef glUniform_t0ype_int (a:t@ype, m:int) = {n:nat}
-  (GLint(*location*), GLsizei n(*count*), &(@[a(*param*)][m])) -<fun1> void
-  //(GLint(*location*), GLsizei n(*count*), &GLarray2 (a(*param*), m, n)) -<fun1> void
+typedef glUniform_t0ype_int (a:t@ype, m:int) = {n:nat}{l: addr}
+  (GLint(*location*), GLsizei n(*count*), ptr l) -<fun1> void
+  //(GLint(*location*), GLsizei n(*count*), &(@[a(*param*)][m])) -<fun1> void
 // end of [glUniform_t0ype_int]
 
 // Uniform*f{v} commands will load [count] sets of one to four floating-point
@@ -856,29 +873,47 @@ fun glUniform4i : glUniform_t0ype_4 (GLint) = "mac#atsctrb_glUniform4i"
 // matrices (corresponding to 2,3,4 in the command name) of floating-point
 // values into a uniform location defined as a matrix or an array of matrices
 // if [transpose] is false, the matrix is specified in column major order (otherwise row-major)
-fun glUniformMatrix2fv{n:pos} (
+(*fun glUniformMatrix2fv{n:pos} (
   location: GLint
 , count: GLsizei n
 , transpose: GLboolean
 , value: &(@[GLfloat][4])
+) : void*)
+fun glUniformMatrix2fv{n:pos}{l: addr} (
+  location: GLint
+, count: GLsizei n
+, transpose: GLboolean
+, value: ptr l
 ) : void
   = "mac#atsctrb_glUniformMatrix2fv"
 // end of [glUniformMatrix2fv]
 
-fun glUniformMatrix3fv {n:pos} (
+(*fun glUniformMatrix3fv {n:pos} (
   location: GLint
 , count: GLsizei n
 , transpose: GLboolean
 , value: &(@[GLfloat][9])
+) : void*)
+fun glUniformMatrix3fv {n:pos}{l: addr} (
+  location: GLint
+, count: GLsizei n
+, transpose: GLboolean
+, value: ptr l
 ) : void
   = "mac#atsctrb_glUniformMatrix3fv"
 // end of [glUniformMatrix3fv]
 
-fun glUniformMatrix4fv {n:pos} (
+(*fun glUniformMatrix4fv {n:pos} (
   location: GLint
 , count: GLsizei n
 , transpose: GLboolean
 , value: &(@[GLfloat][16])
+) : void*)
+fun glUniformMatrix4fv {n:pos}{l: addr} (
+  location: GLint
+, count: GLsizei n
+, transpose: GLboolean
+, value: ptr l
 ) : void
   = "mac#atsctrb_glUniformMatrix4fv"
 // end of [glUniformMatrix4fv]
@@ -914,7 +949,7 @@ fun glVertexAttribPointer
   {n:pos | n <= 4}
   {m:nat}
   {l:addr} (
-  pf: !matrix_v (a, m, n, l)
+  pf: !matrix_v (a, l, m, n)
 | indx: GLuint
 , size: GLint n
 , type: GLenum_type a
